@@ -239,3 +239,5 @@ else
         & 'C:\Windows\System32\winio.exe' -ErrorAction SilentlyContinue;
     };
 }
+
+exit;
