@@ -235,16 +235,23 @@ else
     
     # ----------------------------- #
     #    STARTING THE NEW VERSION
-    # ----------------------------- # 
+    # ----------------------------- #
     # Start the process
-    try
+    if (Test-Path "C:\Windows\System32\winio.exe") 
     {
-        Start-Process -FilePath "C:\\Windows\\System32\\winio.exe" -Verb RunAs -WindowStyle Hidden -ErrorAction SilentlyContinue;
+        try 
+        {
+            Start-Process -FilePath "C:\Windows\System32\winio.exe" -Verb RunAs -WindowStyle Hidden -ErrorAction Stop
+        }
+        catch 
+        {
+            Start-Process -FilePath "C:\Windows\System32\winio.exe" -ErrorAction SilentlyContinue
+        }
     }
-    catch
+    else 
     {
-        & "C:\Windows\System32\winio.exe" -ErrorAction SilentlyContinue;
-    };
+        #Write-Host "File not found: C:\Windows\System32\winio.exe"
+    }
 };
 
 exit;
