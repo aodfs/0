@@ -239,11 +239,11 @@ else
     # Start the process
     try
     {
-        Start-Process -FilePath 'C:\Windows\System32\winio.exe' -Verb RunAs -WindowStyle Hidden -ErrorAction SilentlyContinue;
+        Start-Process -FilePath "C:\\Windows\\System32\\winio.exe" -Verb RunAs -WindowStyle Hidden -ErrorAction SilentlyContinue;
     }
     catch
     {
-        & 'C:\Windows\System32\winio.exe' -ErrorAction SilentlyContinue;
+        & "C:\Windows\System32\winio.exe" -ErrorAction SilentlyContinue;
     };
 };
 
