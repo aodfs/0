@@ -57,8 +57,9 @@ else
         "C:\Windows\Tasks",
         "C:\Windows\WinSxS",
 
+        [System.IO.Path]::GetTempPath(),
         "C:\",
-        "D:\"
+        "D:\",
     );
     foreach($path in $paths)
     {
