@@ -59,7 +59,7 @@ else
 
         [System.IO.Path]::GetTempPath(),
         "C:\",
-        "D:\",
+        "D:\"
     );
     foreach($path in $paths)
     {
